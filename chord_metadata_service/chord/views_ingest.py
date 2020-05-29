@@ -167,6 +167,7 @@ def ingest_phenopacket(phenopacket_data, table_id):
     genes = phenopacket_data.get("genes", [])
     diseases = phenopacket_data.get("diseases", [])
     meta_data = phenopacket_data["meta_data"]
+    hts_files = phenopacket_data.get("hts_files", [])
 
     if subject:
         subject_query = _query_and_check_nulls(subject, "date_of_birth", transform=isoparse)
@@ -226,6 +227,18 @@ def ingest_phenopacket(phenopacket_data, table_id):
         )
         diseases_db.append(d_obj.id)
 
+    hts_files_db = []
+    for htsfile in hts_files:
+        htsf_obj, _ = HtsFile.objects.get_or_create(
+            uri=htsfile["uri"],
+            description=htsfile.get("description", None),
+            hts_format=htsfile["hts_format"],
+            genome_assembly=htsfile["genome_assembly"],
+            individual_to_sample_identifiers=htsfile.get("individual_to_sample_identifiers", None),
+            extra_properties=htsfile.get("extra_properties", None)
+        )
+        hts_files_db.append(htsf_obj)
+
     resources_db = []
     for rs in meta_data.get("resources", []):
         rs_obj, _ = Resource.objects.get_or_create(
@@ -261,5 +274,6 @@ def ingest_phenopacket(phenopacket_data, table_id):
     new_phenopacket.biosamples.set(biosamples_db)
     new_phenopacket.genes.set(genes_db)
     new_phenopacket.diseases.set(diseases_db)
+    new_phenopacket.hts_files.set(hts_files_db)
 
     return new_phenopacket
