@@ -13,6 +13,7 @@ from chord_metadata_service.restapi.validators import (
     ontology_validator,
     ontology_list_validator
 )
+from chord_metadata_service.vocabularies.models import SkosConcept
 from . import descriptions as d
 from .schemas import (
     ALLELE_SCHEMA,
@@ -248,7 +249,9 @@ class Biosample(models.Model, IndexableMixin):
         Individual, on_delete=models.CASCADE, blank=True, null=True, related_name="biosamples",
         help_text=rec_help(d.BIOSAMPLE, "individual_id"))
     description = models.CharField(max_length=200, blank=True, help_text=rec_help(d.BIOSAMPLE, "description"))
-    sampled_tissue = JSONField(validators=[ontology_validator], help_text=rec_help(d.BIOSAMPLE, "sampled_tissue"))
+    #sampled_tissue = JSONField(validators=[ontology_validator], help_text=rec_help(d.BIOSAMPLE, "sampled_tissue"))
+    sampled_tissue = models.ForeignKey(SkosConcept, null=True, blank=True, on_delete=models.SET_NULL,
+                                       help_text=rec_help(d.BIOSAMPLE, "sampled_tissue"))
     # phenotypic_features = models.ManyToManyField(PhenotypicFeature, blank=True,
     #   help_text='List of phenotypic abnormalities of the sample.')
     taxonomy = JSONField(blank=True, null=True, validators=[ontology_validator],
